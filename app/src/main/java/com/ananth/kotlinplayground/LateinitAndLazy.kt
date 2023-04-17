@@ -6,7 +6,7 @@ fun main(){
     println(lateInitTest.getFood())
 
    val lazy = LazyTest()
-   lazy.getFood()
+   lazy.getFood1()
 }
 
 
@@ -31,7 +31,7 @@ class LazyTest{
         Food("Idly","Meals","Chapathi")
     }
 
-    fun getFood(): Food {
+    fun getFood1(): Food {
         return food
     }
 }
