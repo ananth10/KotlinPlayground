@@ -10,6 +10,6 @@ fun main(){
 //type check
 
 fun printSum(c:Collection<*>){
-    val intList = c as? List<Int>?:throw IllegalArgumentException("List is expected")
+    val intList = c as? List1<Int>?:throw IllegalArgumentException("List is expected")
 
 }

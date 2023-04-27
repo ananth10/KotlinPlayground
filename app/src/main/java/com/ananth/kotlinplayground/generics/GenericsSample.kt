@@ -8,19 +8,19 @@ fun main(){
 
 //declare a generic interface
 
-interface List<T>{
+interface List1<T>{
 
     operator fun get(index:Int):T
 }
 
-class StringList: List<String>{
+class StringList: List1<String>{
     val list = listOf("apple","orange")
     override fun get(index: Int): String {
        return list[index]
     }
 }
 
-class ArrayList<E>: List<E>{
+class ArrayList<E>: List1<E>{
     val list = (1..10).toList()
 
     override fun get(index: Int): E {

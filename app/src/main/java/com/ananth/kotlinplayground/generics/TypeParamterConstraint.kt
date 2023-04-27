@@ -26,7 +26,7 @@ fun main(){
 }
 
 //here we set Number type as upper bound
-fun <T:Number> List<T>.sum():T {
+fun <T:Number> List1<T>.sum():T {
     return this[0]
 }
 
