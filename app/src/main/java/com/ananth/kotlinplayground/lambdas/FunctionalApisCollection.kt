@@ -1,5 +1,8 @@
 package com.ananth.kotlinplayground.lambdas
 
+import com.ananth.kotlinplayground.generics.list
+import java.io.File
+
 fun main() {
     useFilter()
     useMap()
@@ -10,6 +13,12 @@ fun main() {
     testFlatMap()
 
     testSeq()
+
+    testSequence()
+
+    testUnTransformedElement()
+
+    generateSequence()
 }
 
 /**
@@ -174,3 +183,72 @@ fun testSeq() {
  *-> The answer is: sometimes. If you only need to iterate over the elements in a sequence, you can use the sequence directly.
  * -> If you need to use other API methods, such as accessing the elements by index, then you need to convert the sequence to a list.
  * */
+
+//5.3.1. Executing sequence operations: intermediate and terminal operations
+
+/**
+ * Operation on a sequence are divided into two categories:
+ * 1. Intermediate
+ * 2. Terminal
+ *
+ * An intermediate operation returns another sequence, which knows how to transform the
+ * elements of the original sequence.
+ * A terminal returns a result, which may be a collection, an element, a number or another object
+ * Thats somehow obtained by the sequence of transformations of the initial collection
+ *
+ * The terminal operation causes all the postponed computations to be performed.
+ *
+ * Note: This approach means some elements aren’t transformed at all if the result is obtained before they are reached.
+ *  Let’s look at an example with map and find operations.
+ *
+ * */
+
+fun testSequence() {
+    listOf(1, 2, 3, 4, 5, 6, 7, 8, 9).asSequence()
+        .map { print("map($it) "); it * it } //intermedia operation
+        .filter { print("filter($it) "); it % 2 == 0 } //intermediate operation
+        .toList() //terminal
+}
+
+fun testUnTransformedElement() {
+    println(listOf(1, 2, 3, 4).asSequence()
+        .map { it * it }.find { it > 3 })
+}
+
+//performance matters
+fun twoDifferentApproach(){
+    val people = listOf(Person("Alice", 29), Person("Bob", 31),
+          Person("Charles", 31), Person("Dan", 21))
+     println(people.asSequence().map(Person::name).filter { it.length < 4 }.toList())
+
+    //filter helps here to reduce total number of transformation
+    println(people.asSequence().filter { it.name.length < 4 }.map(Person::name).toList())
+}
+
+//5.3.2. Creating sequences
+/**
+ * The previous examples used the same method to create a sequence: you called as-Sequence()
+ * Another possibility is to use the generateSequence function.
+ * This function calculates the next element in a sequence given the previous one
+ * ->Note that naturalNumbers and numbersTo100 in this example are both sequences with postponed computation.
+ * ->The actual numbers in those sequences won’t be evaluated until you call the terminal operation (sum in this case
+ *
+ * ->In the following example, you inquire whether the file is located in a hidden directory by
+ * generating a sequence of its parent directories and checking this attribute on each of the directories.
+ *
+ * ->Once again, you generate a sequence by providing the first element and a way to get each subsequent element.
+ * By replacing any with find, you’ll get the desired directory
+ * */
+
+fun generateSequence(){
+    val  naturalNumbers = generateSequence(0){it+1}
+    val  numbersTo100 = naturalNumbers.takeWhile { it<=100 }
+    println(numbersTo100.sum())
+}
+
+fun File.isInsideHiddenDirectory() = generateSequence(this) { it.parentFile }.any { it.isHidden }
+
+fun checkHiddenFiles(){
+    val file = File("/Users/svtk/.HiddenDir/a.txt")
+    println(file.isInsideHiddenDirectory())
+}
