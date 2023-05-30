@@ -1,0 +1,14 @@
+//Summary
+/**
+ * ->Lambdas allow us to pass chunk of code as argument to the function
+ * ->Kotlin lets you pass lambdas to functions outside of parenthesis and refer to a single lambda parameter "it"
+ * ->Code in a lambda can access and modify variables in the function containing the call to lambda
+ * ->You can create references to methods, constructors, and properties by prefixing the name of the function with :: and pass such references to function instead of lambda
+ * ->Most common operations with collections can be performed without manually iterating over elements, using functions such as
+ * filter,map,all, any
+ * ->Sequence allows you to combine multiple operations on a collection without creating collections to hold intermediate results
+ * ->You can pass lambdas as arguments to methods that take a Java functional interface (an interface with a single abstract method, also known as SAM interface) as parameter.
+ * ->Lambdas with receivers are lambdas in which we can directly call methods on a special receiver object.
+ * ->The with standard library function allows you to call multiple methods on the same object without repeating the reference to the object.
+ * ->apply lets you construct and initialize any object using a builder-style API.
+ * */
