@@ -367,3 +367,32 @@ fun fooCompiled(lock: Lock) {
 }
 
 //8.2.2. Restrictions on inline functions
+
+/**
+ * ->Generally, the parameter can be inlined if it’s called directly or passed as an argument to another inline function.
+ * ->Otherwise, the compiler will prohibit the inlining of the parameter with an error message that says “Illegal usage of inline-parameter.”
+ * ->For example, various functions that work on sequences return instances of classes that represent the corresponding sequence operation and receive the lambda as a constructor parameter.
+ * */
+
+//fun <T, R> Sequence<T>.map(transform: (T) -> R): Sequence<R> {
+//    return TransformingSequence(this, transform)
+//}
+/**
+ * ->The map function doesn’t call the function passed as the transform parameter directly.
+ * ->Instead, it passes this function to the constructor of a class that stores it in a property.
+ * ->To support that, the lambda passed as the transform argument needs to be compiled into the standard non-inline representation,
+ * as an anonymous class implementing a function interface.
+ *
+ * ->If you have a function that expects two or more lambdas as arguments, you may choose to inline only some of them.
+ * ->This makes sense when one of the lambdas is expected to contain a lot of code or is used in a way that doesn’t allow inlining.
+ * ->You can mark the parameters that accept such non-inlineable lambdas with the noinline modifier:
+ *
+ * ->Note that the compiler fully supports inlining functions across modules, or functions defined in third-party libraries.
+ * ->You can also call most inline functions from Java; such calls will not be inlined, but will be compiled as regular function calls.
+ * */
+
+inline fun foo(inlined: () -> Unit, noinline notInlined: () -> Unit) {
+    // ...
+}
+
+//8.2.3. Inlining collection operations
