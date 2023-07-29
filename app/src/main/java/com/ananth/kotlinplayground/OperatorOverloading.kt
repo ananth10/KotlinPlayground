@@ -441,3 +441,15 @@ class  Person9{
 
     val name:String by _attributes // uses map as delegated property
 }
+
+//invoke operator
+
+object School{
+    operator fun invoke(){
+        println("You have started going to school")
+    }
+}
+
+fun callSchool(){
+    School()
+}
