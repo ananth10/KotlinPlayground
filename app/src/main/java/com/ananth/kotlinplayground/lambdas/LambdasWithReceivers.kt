@@ -116,3 +116,16 @@ fun alphabet3() = buildString{
 
 val test = ::alphabet2 // method reference
 //Lambdas with receivers are great tools for building DSLs;
+
+//lambda with extension function
+
+fun <T> T.upSize(action:T.()->Unit):T{
+    action(this)
+    return this
+}
+
+fun testUpSize(){
+   "hello".upSize {
+       println(toUpperCase())
+   }
+}
