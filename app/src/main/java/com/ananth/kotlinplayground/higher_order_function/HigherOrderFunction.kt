@@ -5,8 +5,10 @@ import com.ananth.kotlinplayground.performRequest
 import java.util.concurrent.locks.Lock
 
 fun main(){
-    testPerformRequest()
-    filterUse()
+//    testPerformRequest()
+//    filterUse()
+    lookForAlice11(listOf(Person("john",23), Person("Alice",23), Person("Ken",40)))
+    lookForAlice12(listOf(Person("john",23), Person("Alice",23), Person("Ken",40)))
 }
 /**
  * Lambdas are a great tool for building abstractions.
@@ -396,3 +398,158 @@ inline fun foo(inlined: () -> Unit, noinline notInlined: () -> Unit) {
 }
 
 //8.2.3. Inlining collection operations
+/**
+ * ->Most of the collection functions in the standard library take lambda expressions as arguments.
+ * ->Would it be more efficient to implement these operations directly, instead of using the standard library functions?
+ *
+ * */
+//Filtering a collection using a lambda
+data class Person(val name: String, val age: Int)
+val people = listOf(Person("Alice", 29), Person("Bob", 31))
+
+fun filterPeople(){
+    println(people.filter { it.age>29 })
+}
+
+//Filtering a collection without using a lambda
+fun filterPeople1(){
+    val result = mutableListOf<Person>()
+    for (people in people){
+        if(people.age>29){
+            result.add(people)
+        }
+    }
+    println("Result: $result")
+}
+
+/**
+ * -> in kotlin filter function declared as inline. in means the bytecode of the filter function, together with the bytecode of the lambda passed to it. will be inlined where the filter is called.
+ * ->the bytecode generated for the first version that uses filter is roughly the same as the bytecode generated for the second version
+ * ->Kotlin’s support for inline functions ensures that you don’t need to worry about performance.
+ * */
+
+//8.3. Control flow in higher-order functions
+/**
+ * ->When you start using lambdas to replace imperative code constructs such as loops,
+ * you quickly run into the issue of return expressions.
+ * ->Putting a return statement in the middle of a loop is a no-brainer
+ * But what if you convert the loop into the use of a function such as filter? How does return work in that case?
+ *
+ * */
+
+//8.3.1. Return statements in lambdas: return from an enclosing function
+//Listing 8.18. Using return in a regular loop
+fun lookForAlice(people: List<Person>) {
+    for (person in people) {
+        if (person.name == "Alice") {
+            println("Found!")
+            return
+        }
+    }
+    println("Alice is not found")
+}
+//Listing 8.19. Using return in a lambda passed to forEach
+/**
+ * -> If you use the return keyword in a lambda, it returns from the function in which you called the lambda, not just from the lambda itself. Such a return statement is called a non-local return,
+ * because it returns from a larger block than the block containing the return statement.
+ * -> To understand the logic behind the rule, think about using a return keyword in a for loop or a synchronized block in a Java method.
+ * ->It’s obvious that it returns from the function and not from the loop or block.
+ * ->Kotlin allows you to preserve the same behavior when you switch from language features to functions that take lambdas as arguments.
+ *
+ * ->Note that the return from the outer function is possible only if the function that takes the lambda as an argument is inlined.
+ * ->the body of the forEach function is inlined together with the body of the lambda,
+ * so it’s easy to compile the return expression so that it returns from the enclosing function
+ * -> Using the return expression in lambdas passed to non-inline functions isn’t allowed.
+ * ->A non-inline function can save the lambda passed to it in a variable and execute it later, when the function has already returned,
+ * */
+fun lookForAlice1(people: List<Person>) {
+    people.forEach {
+        if (it.name == "Alice") {
+            println("Found!")
+            return
+        }
+    }
+    println("Alice is not found")
+}
+
+//8.3.2. Returning from lambdas: return with a label
+/**
+ * ->You can write a local return from a lambda expression as well. A local return in a lambda is similar to a break expression in a for loop.
+ * ->It stops the execution of the lambda and continues execution of the code from which the lambda was invoked.
+ * -> To distinguish a local return from a non-local one, you use labels
+ * ->  You can label a lambda expression from which you want to return,  and then refer to this label after the return keyword.
+ *
+ * ->Alternatively, the name of the function that takes this lambda as an argument can be used as a label.
+ * */
+
+private fun lookForAlice11(people:List<Person>){
+    people.forEach label@ { person ->
+        if(person.name=="Alice")
+            return@label
+    }
+
+    //Alternatively, the name of the function that takes this lambda as an argument can be used as a label.
+    people.forEach { person ->
+        if(person.name=="Alice")
+            return@forEach
+    }
+    println("Alice might be somewhere")
+}
+
+//lambda with receiver with label
+
+fun lambdaLabel(){
+    print(StringBuilder().apply sb@{
+        listOf(1,2,3).apply {
+            this@sb.append(this.toString())
+        }
+    })
+}
+
+///8.3.3. Anonymous functions: local returns by default///
+/**
+ * ->An anonymous function is a different way to write a block of code passed to a function. Let’s start with an example.
+ *
+ * ->You can see that an anonymous function looks similar to a regular function, except that its name and parameter types are omitted.
+ * ->Anonymous functions follow the same rules as regular functions for specifying the return type.
+ * ->Inside an anonymous function, a return expression without a label returns from the anonymous function, not from the enclosing one.
+ * ->The rule is simple: return returns from the closest function declared using the fun keyword.
+ * ->Lambda expressions don’t use the fun keyword, so a return in a lambda returns from the outer function
+ * */
+// Using return in an anonymous function
+fun lookForAlice12(people: List<Person>) {
+    people.forEach(fun (person) {
+        if (person.name == "Alice") return
+        println("${person.name} is not Alice")
+    })
+}
+
+// Using an anonymous function with filter
+
+fun lookForAlice13(people: List<Person>) {
+    people.filter(fun (person): Boolean {
+        return person.age < 30
+    })
+}
+
+//Using an anonymous function with an expression body
+//people.filter(fun (person) = person.age < 30)
+
+
+//Summary//
+/**
+ * ->Function types allow you to declare a variable, parameter, or function return value that holds a reference to a function.
+ *
+ * ->Higher-order functions take other functions as arguments or return them.
+ *You can create such functions by using a function type as the type of a function parameter or return value.
+ *
+ * ->When an inline function is compiled, its bytecode along with the bytecode of a lambda passed to it is inserted directly into the code of the calling function,
+ * which ensures that the call happens with no overhead compared to similar code written directly.
+ *
+ * ->Higher-order functions facilitate code reuse within the parts of a single component and let you build powerful generic libraries.
+ *
+ * ->Inline functions allow you to use non-local returns—return expressions placed in a lambda that return from the enclosing function.
+ *
+ * ->Anonymous functions provide an alternative syntax to lambda expressions with different rules for resolving the return expressions
+ *  You can use them if you need to write a block of code with multiple exit points
+ * */
