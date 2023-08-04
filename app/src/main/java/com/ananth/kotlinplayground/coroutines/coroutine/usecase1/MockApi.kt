@@ -1,8 +1,8 @@
-package com.ananth.kotlinplayground.coroutines.coroutine
+package com.ananth.kotlinplayground.coroutines.coroutine.usecase1
 
-import com.ananth.kotlinplayground.coroutines.coroutine.util.EndpointShouldNotBeCalledException
+import com.ananth.kotlinplayground.coroutines.coroutine.AndroidVersion
+import com.ananth.kotlinplayground.coroutines.coroutine.VersionFeatures
 import okhttp3.OkHttpClient
-import okhttp3.internal.Version
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -31,15 +31,4 @@ fun createMockApi(): MockApi {
     }
 
     return retrofit.create(MockApi::class.java)
-}
-
-open class SimulateSuccessResponse : MockApi{
-    override suspend fun getRecentAndroidVersions(): List<AndroidVersion> {
-        return mockAndroidVersions;
-    }
-
-    override suspend fun getAndroidVersionFeatures(apiLevel: Int): VersionFeatures {
-        throw EndpointShouldNotBeCalledException()
-    }
-
 }

@@ -1,6 +1,8 @@
-package com.ananth.kotlinplayground.coroutines.coroutine
+package com.ananth.kotlinplayground.coroutines.coroutine.usecase1
 
 import androidx.lifecycle.viewModelScope
+import com.ananth.kotlinplayground.coroutines.coroutine.BaseViewModel
+import com.ananth.kotlinplayground.coroutines.coroutine.UiState
 import kotlinx.coroutines.launch
 
 class PerformSingleNetworkRequest(val mockApi: MockApi = createMockApi()) : BaseViewModel<UiState>() {
