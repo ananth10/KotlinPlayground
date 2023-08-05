@@ -1,7 +1,6 @@
 package com.ananth.kotlinplayground.coroutines.coroutine.usecase2
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.ananth.kotlinplayground.coroutines.coroutine.UiState
 import com.ananth.kotlinplayground.coroutines.coroutine.UiState2
 import com.ananth.kotlinplayground.coroutines.coroutine.mockVersionFeaturesAndroid10
 import com.ananth.kotlinplayground.utils.MainCoroutineScopeRule

@@ -6,7 +6,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 class MainCoroutineScopeRule(
-    val testDispatcher: TestDispatcher = TestCoroutineDispatcher()
+    val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()
 ): TestWatcher(), TestCoroutineScope by TestCoroutineScope(testDispatcher){
 
     override fun starting(description: Description) {

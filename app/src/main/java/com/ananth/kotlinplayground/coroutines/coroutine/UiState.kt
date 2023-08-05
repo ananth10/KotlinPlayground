@@ -11,3 +11,9 @@ sealed interface UiState2{
     data class Success(val versionFeatures: VersionFeatures) : UiState2
     data class Error(val error:String) : UiState2
 }
+
+sealed interface UiState3{
+    object Loading:UiState3
+    data class Success(val versionFeatures: List<VersionFeatures>) : UiState3
+    data class Error(val error:String) : UiState3
+}
