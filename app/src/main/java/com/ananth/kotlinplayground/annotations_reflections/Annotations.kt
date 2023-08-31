@@ -1,5 +1,8 @@
 package com.ananth.kotlinplayground.annotations_reflections
 
+import java.util.Date
+import kotlin.reflect.KClass
+
 fun main(){
 
 }
@@ -173,3 +176,132 @@ fun test(list: List<*>) {
  * */
 
 //10.1.4. Declaring annotations
+/**
+ * ->The syntax looks like a regular class declaration, with the added annotation modifier before the class keyword.
+ * ->Because annotation classes are only used to define the structure of metadata associated with declarations and expressions,they can’t contain any code.
+ * Therefore, the compiler prohibits specifying a body for an annotation class.
+ * ->For annotations that have parameters, the parameters are declared in the primary constructor of the class:
+ * ->You use the regular primary constructor declaration syntax. The val keyword is mandatory for all parameters of an annotation class.
+ * */
+
+//e.g - simple annotation
+annotation class JsonExclude
+//with patamter
+//annotation class JsonName(val name: String)
+
+//For comparison, here’s how you’d declare the same annotation in Java:
+/* Java */
+//public @interface JsonName {
+//    String value();
+//}
+/**
+ * ->Note how the Java annotation has a method called value, whereas the Kotlin annotation has a name property.
+ * ->The value method is special in Java: when you apply an annotation, you need to provide explicit names for all attributes you’re specifying except value.
+ * ->n Kotlin, on the other hand, applying an annotation is a regular constructor call.
+ * */
+
+//10.1.5. Meta-annotations: controlling how an annotation is processed
+/**
+ * ->Just as in Java, a Kotlin annotation class can itself be annotated.
+ * ->The annotations that can be applied to annotation classes are called meta-annotations.
+ * ->The standard library defines several of them, and they control how the compiler processes annotations.
+ * Other frameworks use meta-annotations as well—for example,
+ * ->for example, many dependency-injection libraries use meta-annotations to mark annotations used to identify different injectable objects of the same type.
+ *
+ * ->Of the meta-annotations defined in the standard library, the most common is @Target.
+ * ->The declarations of JsonExclude and JsonName in JKid use it to specify the valid targets for those annotations.
+ *
+ * ->The @Target meta-annotation specifies the types of elements to which the annotation can be applied.
+ * -> If you don’t use it, the annotation will be applicable to all declarations.
+ * ->That wouldn’t make sense for JKid, because the library processes only property annotations.
+ * */
+
+
+//Target
+/**
+ * ->The list of values of the AnnotationTarget enum gives the full range of possible targets for an annotation.
+ * ->It includes classes, files, functions, properties, property accessors, types, all expressions, and so on.
+ * ->You can declare multiple targets if you need to:
+ * @Target(AnnotationTarget.CLASS, AnnotationTarget.METHOD).
+ *
+ * ->To declare your own meta-annotation, use ANNOTATION_CLASS as its target:
+ * */
+
+@Target(AnnotationTarget.ANNOTATION_CLASS)
+annotation class BindingAnnotation
+@BindingAnnotation //meta-annoation
+annotation class MyBinding
+
+//THE @RETENTION ANNOTATION
+//In Java, you’ve probably seen another important meta-annotation,
+// @Retention. You can use it to specify whether the annotation you declare will be stored in the .class file and whether it will be accessible at runtime through reflection. Java by default retains annotations in .class files
+// but doesn’t make them accessible at runtime. Most annotations do need to be present at runtime,
+// so in Kotlin the default is different: annotations have RUNTIME retention. Therefore, the JKid annotations do not have an explicitly specified retention.
+
+//10.1.6. Classes as annotation parameters
+
+/**
+ * ->Below example we passed CompanyImpl as argument because we cannot create instance of interface directly.
+ * ->Whenever JKid reads a nested company object for a Person instance, it creates and deserializes an instance of CompanyImpl and stores it in the company property.
+ * ->
+ * */
+
+interface Company {
+    val name: String
+}
+
+data class CompanyImpl(override val name: String) : Company
+
+data class Person(
+    val name: String,
+    @DeserializeInterface(CompanyImpl::class) val company: Company
+)
+annotation class DeserializeInterface(val targetClass: KClass<out Any>)
+
+/**
+ * ->The KClass type is Kotlin’s counterpart to Java’s java.lang.Class type.
+ * ->It’s used to hold references to Kotlin classes;
+ * ->The type parameter of KClass specifies which Kotlin classes can be referred to by this reference.
+ * For instance, CompanyImpl::class has a type KClass<CompanyImpl>,
+ * which is a subtype of the annotation parameter type
+ * ->If you wrote KClass<Any> without the out modifier, you wouldn’t be able to pass CompanyImpl::class as an argument
+ * the only allowed argument would be Any::class.
+ *
+ * ->The out keyword specifies that you’re allowed to refer to classes that extend Any, not just to Any itself.
+ * */
+
+//10.1.7. Generic classes as annotation parameters
+/**
+ * ->By default, JKid serializes properties of nonprimitive types as nested objects. But you can change this behavior and provide your own serialization logic for some values.
+ * ->The @CustomSerializer annotation takes a reference to a custom serializer class as an argument.
+ * The serializer class should implement the ValueSerializer interface:
+ *
+ * ->Suppose you need to support serialization of dates, and you’ve created your own DateSerializer class for that, implementing the ValueSerializer<Date> interface.
+ * -> The Value-Serializer class is generic and defines a type parameter,  so you need to provide a type argument value whenever you refer to the type.
+ * -> Because you know nothing about the types of properties with which this annotation will be used, you can use a star projection (discussed in section 9.3.6) as the argument:
+ * */
+
+interface ValueSerializer<T> {
+    fun toJsonValue(value: T): Any?
+    fun fromJsonValue(jsonValue: Any?): T
+}
+
+data class Person1(
+    val name: String,
+//    @CustomSerializer(DateSerializer::class) val birthDate: Date
+)
+
+/**
+ * ->You need to ensure that the annotation can only refer to classes that implement the ValueSerializer interface.
+ * ->For instance, writing @CustomSerializer(Date::class) should be prohibited, because Date doesn’t implement the ValueSerializer interface.
+ *
+ * -> You can write KClass<out YourClassName>, and if YourClassName has its own type arguments, replace them with *.
+ *
+ * You’ve now seen all the important aspects of declaring and applying annotations in Kotlin.
+ * The next step is to find out how to access the data stored in the annotations. For this, you need to use reflection.
+ * */
+annotation class CustomSerializer(
+    val serializerClass: KClass<out ValueSerializer<*>>
+    //out -> Accept any class implementing ValueSerializer, not only ValueSerializer::class
+    //* -> Allows ValueSerializer to serialize any value
+)
