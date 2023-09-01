@@ -1,0 +1,15 @@
+
+
+1. The syntax for applying annotations in Kotlin is almost the same as in Java.
+2. Kotlin lets you apply annotations to a broader range of targets than Java, including files and expressions.
+3. An annotation argument can be a primitive value, a string, an enum, a class reference, an instance of another annotation class, or an array thereof.
+4. Specifying the use-site target for an annotation, as in @get:Rule, allows you to choose how the annotation is applied if a single Kotlin declaration produces multiple bytecode elements.
+5. You declare an annotation class as a class with a primary constructor where all parameters are marked as val properties and without a body.
+6. Meta-annotations can be used to specify the target, retention mode, and other attributes of annotations.
+7. The reflection API lets you enumerate and access the methods and properties of an object dynamically at runtime.
+8. It has interfaces representing different kinds of declarations, such as classes (KClass), functions (KFunction), and so on.
+9. To obtain a KClass instance, you can use ClassName::class if the class is statically known and obj.javaClass.kotlin to get the class from an object instance.
+10. The KFunction and KProperty interfaces both extend KCallable, which provides the generic call method.
+11. The KCallable.callBy method can be used to invoke methods with default parameter values.
+12. KFunction0, KFunction1, and so on are functions with different numbers of parameters that can be called using the invoke method.
+13. KProperty0 and KProperty1 are properties with different numbers of receivers that support the get method for retrieving the value. KMutableProperty0 and KMutableProperty1 extend those interfaces to support changing property values through the set method.

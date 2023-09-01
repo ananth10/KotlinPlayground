@@ -431,4 +431,130 @@ interface JsonObject {
     fun createArray(propertyName: String): JsonObject
 }
 
+/**
+ * ->The basic seed interface extends JsonObject and provides an additional spawn method to get the resulting instance after the building process is finished.
+ * ->It also declares the createCompositeProperty method that’s used to create both nested objects and nested lists (they use the same underlying logic to create instances through seeds).
+ * ->You may think of spawn as an analogue of build—a method that returns the result value. It returns the constructed object for ObjectSeed and the resulting list for ObjectListSeed or ValueListSeed.
+ * */
+//Interface for creating objects from JSON data
+
+interface Seed: JsonObject {
+    fun spawn(): Any?
+
+    fun createCompositeProperty(
+        propertyName: String,
+        isList: Boolean
+    ): JsonObject
+    override fun createObject(propertyName: String) =
+        createCompositeProperty(propertyName, false)
+    override fun createArray(propertyName: String) =
+        createCompositeProperty(propertyName, true)
+
+    // ...
+}
+//But before that, let’s study the main deserialize function that does all the work of deserializing a value.
+//The top-level deserialization function
+fun <T: Any> deserialize(json: Reader, targetClass: KClass<T>): T {
+    val seed = ObjectSeed(targetClass, ClassInfoCache())
+    Parser(json, seed).parse()
+    return seed.spawn()
+}
+/**
+ * ->To start the parsing, you create an ObjectSeed to store the properties of the object being deserialized,
+ * -> and then you invoke the parser and pass the input stream reader json to it.
+ * ->Once you reach the end of the input data, you call the spawn function to build the resulting object.
+ *
+ * ->Now let’s focus on the implementation of ObjectSeed, which stores the state of an object being constructed.
+ * ->ObjectSeed takes a reference to the resulting class and a classInfoCache object containing cached information about the properties of the class.
+ * ->This cached information will be used later to create instances of that class.
+ *  ClassInfoCache and ClassInfo are helper classes that we’ll discuss in the next section.
+ * */
+
+//deserializing an object
+class ObjectSeed<out T: Any>(
+    targetClass: KClass<T>,
+    val classInfoCache: ClassInfoCache
+) : Seed {
+    private val classInfo: ClassInfo<T> =
+        classInfoCache[targetClass]
+    private val valueArguments = mutableMapOf<KParameter, Any?>()
+    private val seedArguments = mutableMapOf<KParameter, Seed>()
+    private val arguments: Map<KParameter, Any?>
+        get() = valueArguments +
+                seedArguments.mapValues { it.value.spawn() }
+    override fun setSimpleProperty(propertyName: String, value: Any?) {
+        val param = classInfo.getConstructorParameter(propertyName)
+        valueArguments[param] =
+            classInfo.deserializeConstructorArgument(param, value)
+    }
+    override fun createCompositeProperty(
+        propertyName: String, isList: Boolean
+    ): Seed {
+        val param = classInfo.getConstructorParameter(propertyName)
+        val deserializeAs =
+            classInfo.getDeserializeClass(propertyName)
+        val seed = createSeedForType(
+            deserializeAs ?: param.type.javaType, isList)
+        return seed.apply { seedArguments[param] = this }
+    }
+    override fun spawn(): T =
+        classInfo.createInstance(arguments)
+}
+
+//10.2.5. Final deserialization step: callBy() and creating objects using reflection
+/**
+ * ->The last part you need to understand is the ClassInfo class that builds the resulting instance and caches information about constructor parameters.
+ * It is used in ObjectSeed.
+ * ->But before we dive into the implementation details,
+ * let’s look at the APIs that you use to create objects through reflection.
+ *
+ * ->You’ve already seen the KCallable.call method, which calls a function or a constructor by taking a list of arguments.
+ * ->This method works great in many cases, but it has a restriction:
+ * it doesn’t support default parameter values.
+ *  ->In this case, if a user is trying to deserialize an object with a constructor that has default parameter values, you definitely don’t want to require those arguments to be specified in the JSON.
+ *  ->Therefore, you need to use another method, which does support default parameter values: KCallable.callBy.
+ * */
+
+interface KCallable<out R> {
+    fun callBy(args: Map<KParameter, Any?>): R
+    ...
+}
+/**
+ * ->The method takes a map of parameters to their corresponding values that will be passed as arguments.
+ * If a parameter is missing from the map, its default value will be used if possible.
+ *  It’s also nice that you don’t have to put the parameters in the correct order; you can read the name-value pairs from JSON,
+ *  find the parameter corresponding to each argument name, and put its value in the map.
+ *
+ * ->One thing you do need to take care of is getting the types right. The type of the value in the args map needs to match the constructor parameter type;
+ * otherwise, you’ll get an IllegalArgumentException.
+ * ->This is particularly important for numeric types: you need to know whether the parameter takes an Int, a Long, a Double, or another primitive type, and to convert the numeric value coming from JSON to the correct type
+ *  To do that, you use the KParameter.type property.
+ * ->The type conversion works through the same ValueSerializer interface used for custom serialization.
+ *  If a property doesn’t have an @CustomSerializer annotation, you retrieve a standard implementation based on its type.
+ * */
+
+//Getting a serializer based on value type
+
+fun serializerForType(type: Type): ValueSerializer<out Any?>? =
+    when(type) {
+        Byte::class.java -> ByteSerializer
+        Int::class.java -> IntSerializer
+        Boolean::class.java -> BooleanSerializer
+        // ...
+        else -> null
+    }
+
+//The corresponding ValueSerializer implementations perform the necessary type checking or conversion.
+
+// Serializer for Boolean values
+object BooleanSerializer : ValueSerializer<Boolean> {
+    override fun fromJsonValue(jsonValue: Any?): Boolean {
+        if (jsonValue !is Boolean) throw JKidException("Boolean expected")
+        return jsonValue
+    }
+
+    override fun toJsonValue(value: Boolean) = value
+}
+
+
 
