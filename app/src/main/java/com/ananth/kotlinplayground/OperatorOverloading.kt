@@ -9,6 +9,7 @@ import java.time.LocalDate
 import kotlin.properties.Delegates
 import kotlin.reflect.KProperty
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun main(){
 
     val p1 = Point(10,20)
@@ -59,6 +60,8 @@ fun main(){
     checkPropertyChange1()
     checkPropertyChange2()
     checkPropertyOnMap()
+
+    testInOperatorOnCustomDateRange()
 }
 
 //Defining the plus operator
@@ -136,6 +139,33 @@ operator fun Point.get(index:Int):Int{
         0->x
         1->y
         else-> throw IndexOutOfBoundsException("Invalid coordinate $index")
+    }
+}
+
+//implementing date range iterator
+operator fun ClosedRange<LocalDate>.iterator() : Iterator<LocalDate> =
+    object : Iterator<LocalDate>{
+        var current = start
+        @RequiresApi(Build.VERSION_CODES.O)
+        override fun hasNext(): Boolean {
+            return current<=endInclusive
+        }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        override fun next(): LocalDate = current.apply {
+            current = plusDays(1)
+        }
+    }
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun testInOperatorOnCustomDateRange(){
+    val lastYear = LocalDate.ofYearDay(2023,10)
+    val currentYear = LocalDate.ofYearDay(2024,10)
+
+    val dateRanges = lastYear..currentYear
+    for (day in dateRanges){
+        println(day)
     }
 }
 

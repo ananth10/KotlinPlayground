@@ -8,13 +8,15 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
 fun main(){
-    check()
-    check1()
-    check2()
-    check4()
+//    check()
+//    check1()
+//    check2()
+//    check4()
 }
+/*
 
 //10.2. Reflection: introspecting Kotlin objects at runtime
+*/
 /**
  * ->Reflection is, simply put, a way to access properties and methods of objects dynamically at runtime,
  * without knowing in advance what those properties are.
@@ -36,10 +38,12 @@ fun main(){
  *   But at this time it doesn’t provide a comprehensive replacement for the Java reflection API,
  *   there are cases where you need to fall back to Java reflection.
  *   An important note is that the Kotlin reflection API isn’t restricted to Kotlin classes: you can use the same API to access classes written in any JVM language.
- * */
+ * *//*
+
 
 //10.2.1. The Kotlin reflection API: KClass, KCallable, KFunction, and KProperty
 
+*/
 /**
  * ->The main entry point of the Kotlin reflection API is KClass,which represents a class.
  *  KClass is the counterpart of java.lang.Class,
@@ -51,7 +55,8 @@ fun main(){
  *
  *  ->This simple example prints the name of the class and the names of its properties and uses
  *  .memberProperties to collect all non-extension properties defined in the class, as well as in all of its superclasses.
- * */
+ * *//*
+
 
 private class Person2(val name: String, val age: Int)
 
@@ -70,11 +75,13 @@ interface KClass<T : Any> {
     val nestedClasses: Collection<KClass<*>>
 }
 
+*/
 /**
  * ->You may have noticed that the list of all members of a class is a collection of KCallable instances.
  * ->KCallable is a superinterface for functions and properties.
  * It declares the call method, which allows you to call the corresponding function or the getter of the property:
- * */
+ * *//*
+
 //KCallable in kotlin
 interface KCallable<out R> {
     fun call(vararg args: Any?): R
@@ -84,6 +91,7 @@ interface KCallable<out R> {
 // The following code demonstrates how you can use call to call a function through reflection:
 //
 
+*/
 /**
  * ->You saw the ::foo syntax in section 5.1.5, and now you can see that the value of this expression is an instance of the KFunction class from the reflection API.
  * ->To call the referenced function, you use the KCallable.call method.
@@ -99,7 +107,8 @@ interface KCallable<out R> {
  *   ->Therefore, if you have a KFunction of a specific type, with known parameters and return type, it’s preferable to use its invoke method.
  *   ->The call method is a generic approach that works for all types of functions but doesn’t provide type safety
  *
- * */
+ * *//*
+
 fun foo(x: Int) = println(x)
 
 fun check1(){
@@ -116,6 +125,7 @@ fun check2(){
 }
 
 //HOW AND WHERE ARE KFUNCTIONN INTERFACES DEFINED?
+*/
 /**
  * ->Types such as KFunction1 represent functions with different numbers of parameters.
  * Each type extends KFunction and adds one additional member invoke with the appropriate number of parameters.
@@ -124,15 +134,18 @@ fun check2(){
  * These function types are synthetic compiler-generated types, and you won’t find their declarations in the kotlin.reflect package.
  * That means you can use an interface for a function with any number of parameters.
  *  The synthetic-types approach reduces the size of kotlin-runtime.jar  and avoids artificial restrictions on the possible number of function-type parameters.
- * */
+ * *//*
 
+
+*/
 /**
  * ->You can invoke the call method on a KProperty instance as well,
  * and it will call the getter of the property.
  * But the property interface gives you a better way to obtain the property value: the get method.
  * ->To access the get method, you need to use the correct interface for the property, depending on how it’s declared.
  * ->Top-level properties are represented by instances of the KProperty0 interface, which has a no-argument get method:
- * */
+ * *//*
+
 
 var count = 0
 
@@ -143,13 +156,15 @@ fun check4(){
     println(KProperty.get())
 }
 
+*/
 /**
  * ->A member property is represented by an instance of KProperty1, which has a one-argument get method.
  * ->To access its value, you must provide the object instance for which you need the value.
  * The following example stores a reference to the property in a memberProperty variable;
  * -> then you call memberProperty.get(person) to obtain the value of this property for the specific person instance.
  * So if a memberProperty refers to the age property of the Person class, memberProperty.get(person) is a way to dynamically get the value of person.age:
- * */
+ * *//*
+
 private data class Person3(val name:String,val age:Int)
 
 fun accessMemberProperty(){
@@ -158,6 +173,7 @@ fun accessMemberProperty(){
     println(memberProperty.get(person))
 }
 
+*/
 /**
  * ->Note that KProperty1 is a generic class. The memberProperty variable has the type KProperty<Person, Int>,
  * ->where the first type parameter denotes the type of the receiver and the second type parameter stands for the property type.
@@ -165,8 +181,10 @@ fun accessMemberProperty(){
  *
  * ->Also note that you can only use reflection to access properties defined at the top level or in a class, but not local variables of a function.
  * If you define a local variable x and try to get a reference to it using ::x, you’ll get a compilation error saying that “References to variables aren’t supported yet”.
- * */
+ * *//*
 
+
+*/
 /**
  * shows a hierarchy of interfaces that you can use to access source code elements at runtime.
  * ->Because all declarations can be annotated,
@@ -186,13 +204,15 @@ fun accessMemberProperty(){
  *                        \  \
  *    KMutableProperty.Setter  KProperty.Getter
  *
- * */
+ * *//*
+
 
 //10.2.2. Implementing object serialization using reflection
 
 //first recall the declaration of serialize function in JKid
 fun serialize(obj: Any): String = buildString { serializeObject(obj) }
 
+*/
 /**
  * The above function takes an object and returns its JSON representation as string.
  * It will build up the resulting JSON in a StringBuilder instance.
@@ -201,7 +221,8 @@ fun serialize(obj: Any): String = buildString { serializeObject(obj) }
  * That way, you can conveniently calls the append method without qualifier
  *
  *
- * */
+ * *//*
+
 
 
 private fun StringBuilder.serializeObject(obj:Any){
@@ -215,6 +236,7 @@ private fun StringBuilder.serializeObject(obj:Any){
     append(obj)
 }
 //Consequently, the serialize function delegates all the work to serialize-Object:
+*/
 /**
  * As you saw in section 5.5.2, buildString creates a StringBuilder and lets you fill it with content in a lambda. In this case, the content is provided by the call to serialize-Object(obj).
  * ->Now let’s discuss the behavior of the serialization function.
@@ -237,11 +259,13 @@ private fun StringBuilder.serializeObject(obj:Any){
  * ->Therefore, the prop variable has the type KProperty1<Any, *>, and prop.get(obj) returns a value of Any type.
  * You don’t get any compile-time checks for the receiver type, but because you’re passing the same object from which you obtained the list of properties,
  * the receiver type will be correct. Next, let’s see how the annotations that tune up serialization are implemented.
- * */
+ * *//*
+
 //Let’s look at the implementation of serializeObject, where you can observe the reflection API in a real scenario.
 
 
 //10.2.3. Customizing serialization with annotations
+*/
 /**
  * ->Earlier in this chapter, you saw the definitions of annotations that let you customize the process of JSON serialization.
  * ->In particular, we discussed the @JsonExclude, @JsonName, and @CustomSerializer annotations.
@@ -262,7 +286,8 @@ private fun StringBuilder.serializeObject(obj:Any){
  *  ->The findAnnotation function returns an annotation of a type specified as an argument if such an annotation is present.
  *
  *  ->It uses the pattern  and makes the type parameter reified in order to pass the annotation class as the type argument.
- * */
+ * *//*
+
 
 inline fun <reified T> KAnnotatedElement.findAnnotation(): T?
         = annotations.filterIsInstance<T>().firstOrNull()
@@ -276,6 +301,7 @@ val jsonNameAnn=prop.findAnnotation<JsonName>()
 val propName=jsonNameAnn?.name?:prop.name
 
 
+*/
 /**
  * ->If a property isn’t annotated with @JsonName, then jsonNameAnn is null, and you still use prop.name as the name for the property in JSON. If the property is annotated, you use the specified name instead.
  * ->Let’s look at the serialization of an instance of the Person class declared earlier.
@@ -283,7 +309,8 @@ val propName=jsonNameAnn?.name?:prop.name
  *   which is used as a key in JSON.
  *   -> When the age property is serialized, the annotation isn’t found, so the property name age is used as a key.
  *
- * */
+ * *//*
+
 
 //Serializing an object with property filtering
 private fun StringBuilder.serializeObject(obj: Any) {
@@ -309,6 +336,7 @@ private fun StringBuilder.serializeProperty(
 }
 //The property name is processed according to the @JsonName annotation discussed earlier.
 
+*/
 /**
  * Next, let’s implement the remaining annotation, @CustomSerializer.
  *
@@ -316,7 +344,8 @@ private fun StringBuilder.serializeProperty(
  * which returns the ValueSerializer instance registered via the @CustomSerializer annotation.
  *
  * For example, if you declare the Person class as shown next and call getSerializer() when serializing the birthDate property, it will return an instance of DateSerializer:
- * */
+ * *//*
+
 data class Person(
     val name: String,
     @CustomSerializer(DateSerializer::class) val birthDate: Date
@@ -335,6 +364,7 @@ fun KProperty<*>.getSerializer(): ValueSerializer<Any?>? {
     return valueSerializer as ValueSerializer<Any?>
 }
 
+*/
 /**
  * It’s an extension function to KProperty, because the property is the primary object handled by the method.
  * -> It calls the findAnnotation function to get an instance of the @CustomSerializer annotation if it exists.
@@ -356,7 +386,8 @@ fun KProperty<*>.getSerializer(): ValueSerializer<Any?>? {
  *  serializeProperty uses the serializer to convert the property value to a JSON-compatible format by calling toJsonValue.
  *  If the property doesn’t have a custom serializer, it uses the property value.
  *
- * */
+ * *//*
+
 //Serializing a property, with custom serializer support
 private fun StringBuilder.serializeProperty(
     prop: KProperty1<Any, *>, obj: Any
@@ -386,6 +417,7 @@ fun testDeserialize(){
     println(book)
 }
 
+*/
 /**
  * ->You pass the type of object to be deserialized as a reified type parameter to the deserialize function and get back a new object instance.
  * ->Deserializing JSON is a more difficult task than serializing,  because it involves parsing the JSON string input in addition to using reflection to access object internals.
@@ -421,7 +453,8 @@ fun testDeserialize(){
  * To avoid being boring, we use the term seed for the implementation. In JSON,
  * you need to build different types of composite structures: objects, collections, and maps.
  * ->The classes ObjectSeed, ObjectListSeed, and ValueListSeed are responsible for building objects and lists of composite objects or simple values appropriately
- * */
+ * *//*
+
 //JSON parser callback interface
 interface JsonObject {
     fun setSimpleProperty(propertyName: String, value: Any?)
@@ -431,11 +464,13 @@ interface JsonObject {
     fun createArray(propertyName: String): JsonObject
 }
 
+*/
 /**
  * ->The basic seed interface extends JsonObject and provides an additional spawn method to get the resulting instance after the building process is finished.
  * ->It also declares the createCompositeProperty method that’s used to create both nested objects and nested lists (they use the same underlying logic to create instances through seeds).
  * ->You may think of spawn as an analogue of build—a method that returns the result value. It returns the constructed object for ObjectSeed and the resulting list for ObjectListSeed or ValueListSeed.
- * */
+ * *//*
+
 //Interface for creating objects from JSON data
 
 interface Seed: JsonObject {
@@ -459,6 +494,7 @@ fun <T: Any> deserialize(json: Reader, targetClass: KClass<T>): T {
     Parser(json, seed).parse()
     return seed.spawn()
 }
+*/
 /**
  * ->To start the parsing, you create an ObjectSeed to store the properties of the object being deserialized,
  * -> and then you invoke the parser and pass the input stream reader json to it.
@@ -468,7 +504,8 @@ fun <T: Any> deserialize(json: Reader, targetClass: KClass<T>): T {
  * ->ObjectSeed takes a reference to the resulting class and a classInfoCache object containing cached information about the properties of the class.
  * ->This cached information will be used later to create instances of that class.
  *  ClassInfoCache and ClassInfo are helper classes that we’ll discuss in the next section.
- * */
+ * *//*
+
 
 //deserializing an object
 class ObjectSeed<out T: Any>(
@@ -502,6 +539,7 @@ class ObjectSeed<out T: Any>(
 }
 
 //10.2.5. Final deserialization step: callBy() and creating objects using reflection
+*/
 /**
  * ->The last part you need to understand is the ClassInfo class that builds the resulting instance and caches information about constructor parameters.
  * It is used in ObjectSeed.
@@ -513,12 +551,13 @@ class ObjectSeed<out T: Any>(
  * it doesn’t support default parameter values.
  *  ->In this case, if a user is trying to deserialize an object with a constructor that has default parameter values, you definitely don’t want to require those arguments to be specified in the JSON.
  *  ->Therefore, you need to use another method, which does support default parameter values: KCallable.callBy.
- * */
+ * *//*
 
-interface KCallable<out R> {
-    fun callBy(args: Map<KParameter, Any?>): R
-    ...
-}
+
+//interface KCallable<out R> {
+//    fun callBy(args: Map<KParameter, Any?>): R
+//}
+*/
 /**
  * ->The method takes a map of parameters to their corresponding values that will be passed as arguments.
  * If a parameter is missing from the map, its default value will be used if possible.
@@ -531,7 +570,8 @@ interface KCallable<out R> {
  *  To do that, you use the KParameter.type property.
  * ->The type conversion works through the same ValueSerializer interface used for custom serialization.
  *  If a property doesn’t have an @CustomSerializer annotation, you retrieve a standard implementation based on its type.
- * */
+ * *//*
+
 
 //Getting a serializer based on value type
 
@@ -555,6 +595,7 @@ object BooleanSerializer : ValueSerializer<Boolean> {
 
     override fun toJsonValue(value: Boolean) = value
 }
+*/
 
 
 
