@@ -71,3 +71,29 @@ fun test(){
  * Java doesn’t support that and instead uses wildcards to specify the variance for specific uses of a class.
  * Let’s look at the difference between the two approaches and see how you can use the second approach in Kotlin.
  * */
+
+//example
+
+interface Consumer<in T>{
+
+    fun consume(item:T)
+}
+
+class Processor<in T> : Consumer<T>{
+    override fun consume(item: T) {
+
+    }
+
+}
+
+fun testIn(){
+    var anyProcessor:Processor<Any> = Processor()
+    val intProcessor:Processor<Int> = Processor()
+
+    anyProcessor.consume("banana")
+    intProcessor.consume(12345)
+
+    val stringProcessor:Processor<String> = anyProcessor //assigning super type any to subtype string
+
+    println(stringProcessor.consume("men"))
+}

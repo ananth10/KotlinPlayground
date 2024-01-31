@@ -1,7 +1,7 @@
 package com.ananth.kotlinplayground.generics
 
 fun main() {
-
+    testOut()
 }
 
 //Covariance - preserved subtyping relation
@@ -194,4 +194,21 @@ class Herd4<out T:Animal>(private var leadAnimal:T,vararg animals:T)
 
 fun tt(){
     val herd = Herd4<Cat>(Cat())
+}
+
+//example
+
+class Crate<out T>(private val item:T){
+    fun produce():T = item
+}
+
+fun testOut(){
+    val stringCrate:Crate<String> = Crate("banana")
+    val intCrate:Crate<Int> = Crate(1234)
+
+    val x = stringCrate.produce()
+    val y = intCrate.produce()
+
+    println("X:$x")
+    println("Y:$y")
 }
